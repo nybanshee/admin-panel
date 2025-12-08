@@ -33,6 +33,7 @@ export function AttachmentConfigPanel({ attachments, onUpdate }: AttachmentConfi
             name: 'New Attachment',
             type: 'optic',
             weight: 0.1,
+            unlockLevel: 0,
             pros: [],
             cons: []
         };
@@ -155,12 +156,21 @@ export function AttachmentConfigPanel({ attachments, onUpdate }: AttachmentConfi
                                     value={selectedAttachment.type}
                                     options={[
                                         { value: 'optic', label: 'Optic' },
-                                        { value: 'muzzle', label: 'Barrel/Muzzle' },
+                                        { value: 'muzzle', label: 'Muzzle' },
+                                        { value: 'barrel', label: 'Barrel' },
                                         { value: 'grip', label: 'Underbarrel' },
                                         { value: 'mag', label: 'Magazine' },
+                                        { value: 'stock', label: 'Stock' },
                                     ]}
                                     color="purple"
                                     onChange={(v) => updateAttachment('type', v)}
+                                />
+                                <TechSlider 
+                                    label="Unlock Level"
+                                    value={selectedAttachment.unlockLevel || 0}
+                                    min={0} max={100} step={1}
+                                    color="yellow"
+                                    onChange={(v) => updateAttachment('unlockLevel', v)}
                                 />
                                 <TechSlider 
                                     label="Weight (kg)"

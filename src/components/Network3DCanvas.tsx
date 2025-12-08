@@ -7,6 +7,7 @@ import { io } from 'socket.io-client'
 import * as THREE from 'three'
 import { Search, Tag, Settings, Plus, X, Maximize2, Minimize2, Undo, Redo, Trash2, Link, LayoutTemplate, Sliders, Grid3X3, MousePointer2, Wand2 } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useAuthStore, hasPermission } from '../store/auth';
 
 function SupermassiveBlackHole() {
     return (
@@ -432,7 +433,14 @@ function groupNodesByParent(
     return groups;
 }
 
+
 export function Network3DCanvas() {
+  const user = useAuthStore(s => s.user);
+  const workspace = useAuthStore(s => s.workspace);
+  const roles = useAuthStore(s => s.roles);
+  const canEdit = hasPermission(user, roles, 'edit_network');
+  const isVisitor = !canEdit;
+
   const addNode = useNetwork3DStore(s => s.addNode)
   const selectNode = useNetwork3DStore(s => s.selectNode)
   const removeNodes = useNetwork3DStore(s => s.removeNodes)
@@ -458,7 +466,7 @@ export function Network3DCanvas() {
   const onResetCamera = () => setCameraKey(k => k + 1)
   
   const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000'
-  const BOARD_ID = 'main'
+  const BOARD_ID = workspace?.id || 'main'
   const socketRef = useRef<any>(null)
   const lastNodeIdRef = useRef<string | null>(null)
   
@@ -493,6 +501,7 @@ export function Network3DCanvas() {
   // Keyboard Shortcuts
   useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
+          if (isVisitor) return; // Disable shortcuts for visitor
           if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
               copy();
           }
@@ -502,7 +511,7 @@ export function Network3DCanvas() {
       };
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [copy, paste]);
+  }, [copy, paste, isVisitor]);
 
   useEffect(() => {
     const s = io(API_URL, { transports: ['websocket'] })
@@ -512,15 +521,18 @@ export function Network3DCanvas() {
       useNetwork3DStore.getState().load({ nodes: graph.nodes as any, edges: graph.edges as any })
     })
     return () => { s.disconnect() }
-  }, [])
+  }, [BOARD_ID]) // Re-run when BOARD_ID changes
 
   useEffect(() => {
+    // Only emit updates if NOT visitor (although server doesn't enforce, client should avoid sending)
+    if (isVisitor) return; 
+
     const handler = setTimeout(() => {
       const s = socketRef.current
       if (s) s.emit('graph3d_update', { boardId: BOARD_ID, nodes, edges })
     }, 50)
     return () => clearTimeout(handler)
-  }, [nodes, edges])
+  }, [nodes, edges, BOARD_ID, isVisitor])
 
   function findOpenPosition3D(base: [number, number, number]) {
     const existing = nodes.map(n => n.position)
@@ -647,30 +659,34 @@ export function Network3DCanvas() {
               >
                   <Sliders className="w-4 h-4" />
               </button>
-              <button onClick={() => autoWire(autoWireMatchTags, autoWireLimits)} className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-800 rounded text-purple-400 font-bold text-xs uppercase tracking-wider" title="Auto Wire">
-                  <Wand2 className="w-4 h-4" />
-                  Auto Wire
-              </button>
-              <button onClick={() => performAutoLayout()} className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-800 rounded text-cyan-400 font-bold text-xs uppercase tracking-wider" title="Auto Layout">
-                  <LayoutTemplate className="w-4 h-4" />
-                  Auto Layout
-              </button>
-              <div className="h-4 w-px bg-slate-700 mx-1" />
-              <button onClick={() => undo()} className="p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white" title="Undo">
-                  <Undo className="w-4 h-4" />
-              </button>
-              <button onClick={() => redo()} className="p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white" title="Redo">
-                  <Redo className="w-4 h-4" />
-              </button>
-              <div className="h-4 w-px bg-slate-700 mx-1" />
-              <button 
-                  onClick={() => setShowDeleteConfirm(true)} 
-                  className="p-2 hover:bg-red-900/50 rounded text-red-400 hover:text-red-200" 
-                  title="Delete All"
-              >
-                  <Trash2 className="w-4 h-4" />
-              </button>
-              <div className="h-4 w-px bg-slate-700 mx-1" />
+              {!isVisitor && (
+                <>
+                    <button onClick={() => autoWire(autoWireMatchTags, autoWireLimits)} className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-800 rounded text-purple-400 font-bold text-xs uppercase tracking-wider" title="Auto Wire">
+                        <Wand2 className="w-4 h-4" />
+                        Auto Wire
+                    </button>
+                    <button onClick={() => performAutoLayout()} className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-800 rounded text-cyan-400 font-bold text-xs uppercase tracking-wider" title="Auto Layout">
+                        <LayoutTemplate className="w-4 h-4" />
+                        Auto Layout
+                    </button>
+                    <div className="h-4 w-px bg-slate-700 mx-1" />
+                    <button onClick={() => undo()} className="p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white" title="Undo">
+                        <Undo className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => redo()} className="p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white" title="Redo">
+                        <Redo className="w-4 h-4" />
+                    </button>
+                    <div className="h-4 w-px bg-slate-700 mx-1" />
+                    <button 
+                        onClick={() => setShowDeleteConfirm(true)} 
+                        className="p-2 hover:bg-red-900/50 rounded text-red-400 hover:text-red-200" 
+                        title="Delete All"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                    <div className="h-4 w-px bg-slate-700 mx-1" />
+                </>
+              )}
               <button onClick={() => { triggerReset(); onResetCamera() }} className="p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white" title="Reset Camera">
                   <Maximize2 className="w-4 h-4" />
               </button>
@@ -876,7 +892,8 @@ export function Network3DCanvas() {
 
       {/* Main Actions (Bottom Center) */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 pointer-events-auto">
-          <div className="relative">
+          {!isVisitor && (
+            <div className="relative">
               <button 
                 className="flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-full shadow-lg shadow-cyan-500/20 transition-all hover:scale-105"
                 onClick={() => setShowAddMenu(!showAddMenu)}
@@ -941,9 +958,10 @@ export function Network3DCanvas() {
                       </button>
                   </div>
               )}
-          </div>
+            </div>
+          )}
           
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && !isVisitor && (
               <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700 p-1.5 rounded-full shadow-xl">
                    {selectedIds.length === 1 && (
                        <button 

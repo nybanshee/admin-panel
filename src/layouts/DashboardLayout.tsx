@@ -1,11 +1,15 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { Sidebar } from '../components/Sidebar';
+import { Sidebar, MobileNavbar } from '../components/Sidebar';
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
+import { usePresence } from '../hooks/usePresence';
 
 export function DashboardLayout() {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
+  
+  // Track user presence
+  usePresence(location.pathname);
 
   useEffect(() => {
     if (mainRef.current) {
@@ -14,14 +18,14 @@ export function DashboardLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-50 relative overflow-hidden">
+    <div className="flex h-screen bg-slate-950 text-slate-50 relative overflow-hidden flex-col md:flex-row">
         {/* Background Grid */}
         <div className="absolute inset-0 z-0 opacity-[0.05]" 
            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '50px 50px' }}>
         </div>
         
       <Sidebar />
-      <main ref={mainRef} className="ml-64 flex-1 h-full overflow-y-auto p-8 relative z-10 scrollbar-thin scrollbar-thumb-slate-800">
+      <main ref={mainRef} className="flex-1 h-full overflow-y-auto p-4 md:p-8 relative z-10 scrollbar-thin scrollbar-thumb-slate-800 pb-20 md:pb-8">
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 10 }}
@@ -32,6 +36,7 @@ export function DashboardLayout() {
           <Outlet />
         </motion.div>
       </main>
+      <MobileNavbar />
     </div>
   );
 }

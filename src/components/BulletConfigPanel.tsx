@@ -4,7 +4,9 @@ import { TechCard } from './TechCard';
 import { TechSlider } from './TechSlider';
 import { NeonSwitch } from './NeonSwitch';
 import { cn } from '../lib/utils';
-import { Plus, Zap, Trash2 } from 'lucide-react';
+import { Plus, Zap, Trash2, Palette } from 'lucide-react';
+import { ColorPicker } from './ColorPicker';
+import { useAuthStore } from '../store/auth';
 
 interface BulletConfigPanelProps {
     bullets: BulletConfig[];
@@ -12,7 +14,9 @@ interface BulletConfigPanelProps {
 }
 
 export function BulletConfigPanel({ bullets, onUpdate }: BulletConfigPanelProps) {
+    const { user, saveColor, deleteColor } = useAuthStore();
     const [selectedId, setSelectedId] = useState<string | null>(bullets[0]?.id || null);
+    const [showColorPicker, setShowColorPicker] = useState(false);
 
     const selectedBullet = bullets.find(b => b.id === selectedId);
 
@@ -30,7 +34,7 @@ export function BulletConfigPanel({ bullets, onUpdate }: BulletConfigPanelProps)
         const newBullet: BulletConfig = {
             id: newId,
             label: 'New Ammo Type',
-            color: 'bg-slate-500',
+            color: '#64748b', // Default hex
             damageMult: 1.0,
             penetration: 0,
             velocity: 1.0,
@@ -68,7 +72,10 @@ export function BulletConfigPanel({ bullets, onUpdate }: BulletConfigPanelProps)
                             )}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={cn("w-3 h-3 rounded-full", b.color)} />
+                                <div 
+                                    className={cn("w-3 h-3 rounded-full border border-slate-600", b.color.startsWith('bg-') && b.color)}
+                                    style={{ backgroundColor: b.color.startsWith('bg-') ? undefined : b.color }}
+                                />
                                 <span className={cn("font-bold uppercase text-sm", selectedId === b.id ? "text-white" : "text-slate-400")}>
                                     {b.label}
                                 </span>
@@ -164,21 +171,33 @@ export function BulletConfigPanel({ bullets, onUpdate }: BulletConfigPanelProps)
                                     color="red"
                                 />
                                 
-                                <div>
+                                <div className="relative">
                                     <label className="text-xs font-bold text-slate-500 uppercase block mb-2">Tracer Color</label>
-                                    <div className="flex gap-2">
-                                        {['bg-slate-400', 'bg-cyan-500', 'bg-red-500', 'bg-orange-500', 'bg-yellow-400', 'bg-green-400', 'bg-purple-500'].map(color => (
-                                            <button
-                                                key={color}
-                                                onClick={() => updateBullet('color', color)}
-                                                className={cn(
-                                                    "w-6 h-6 rounded-full border-2 transition-all",
-                                                    color,
-                                                    selectedBullet.color === color ? "border-white scale-110 shadow-lg" : "border-transparent opacity-50 hover:opacity-100"
-                                                )}
+                                    <button
+                                        onClick={() => setShowColorPicker(!showColorPicker)}
+                                        className="flex items-center gap-2 p-2 rounded bg-slate-950 border border-slate-700 hover:border-cyan-500 transition-colors"
+                                    >
+                                        <div 
+                                            className={cn("w-6 h-6 rounded-full border border-white/20", selectedBullet.color.startsWith('bg-') && selectedBullet.color)}
+                                            style={{ backgroundColor: selectedBullet.color.startsWith('bg-') ? undefined : selectedBullet.color }}
+                                        />
+                                        <span className="text-xs font-mono text-slate-300">
+                                            {selectedBullet.color}
+                                        </span>
+                                        <Palette className="w-4 h-4 text-slate-500 ml-auto" />
+                                    </button>
+
+                                    {showColorPicker && (
+                                        <div className="absolute bottom-full left-0 mb-2 z-50 shadow-2xl">
+                                            <ColorPicker 
+                                                color={selectedBullet.color.startsWith('bg-') ? '#ffffff' : selectedBullet.color}
+                                                onChange={(c) => updateBullet('color', c)}
+                                                savedColors={user?.theme?.savedColors}
+                                                onSaveColor={saveColor}
+                                                onDeleteColor={deleteColor}
                                             />
-                                        ))}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

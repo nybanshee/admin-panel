@@ -39,6 +39,7 @@ export interface WeaponConfig {
   id: string;
   name: string;
   category: string;
+  unlockLevel: number; // Added unlockLevel
   enabled: boolean;
   dualWield: boolean;
   magSequence: string[];
@@ -66,7 +67,8 @@ export interface BulletConfig {
 export interface AttachmentConfig {
     id: string;
     name: string;
-    type: 'optic' | 'muzzle' | 'grip' | 'mag';
+    type: 'optic' | 'muzzle' | 'grip' | 'mag' | 'barrel' | 'stock'; // Added barrel and stock to type
+    unlockLevel: number; // Added unlockLevel
     weight: number;
     pros: string[];
     cons: string[];

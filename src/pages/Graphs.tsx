@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TechCard } from '../components/TechCard';
 import {
@@ -14,27 +15,44 @@ import {
   Bar,
 } from 'recharts';
 
-const progressionData = [
-  { day: 'Mon', xp: 4000, level: 12 },
-  { day: 'Tue', xp: 3000, level: 12 },
-  { day: 'Wed', xp: 2000, level: 13 },
-  { day: 'Thu', xp: 2780, level: 13 },
-  { day: 'Fri', xp: 1890, level: 14 },
-  { day: 'Sat', xp: 2390, level: 14 },
-  { day: 'Sun', xp: 3490, level: 15 },
-];
-
-const unlocksData = [
-  { level: 1, unlocks: 2, xpReq: 100 },
-  { level: 5, unlocks: 5, xpReq: 500 },
-  { level: 10, unlocks: 3, xpReq: 1500 },
-  { level: 15, unlocks: 8, xpReq: 3000 },
-  { level: 20, unlocks: 4, xpReq: 6000 },
-  { level: 25, unlocks: 6, xpReq: 10000 },
-  { level: 30, unlocks: 2, xpReq: 15000 },
-];
+// This would ideally come from the server or GameSettings state, but for now we mock it or try to fetch
+// Since GameSettings has the real state, we might want to lift state up or use a store.
+// For this task, I will mock the connection to the "Level Unlocks Distribution" by calculating it 
+// from a hypothetical set of items if available, or just keep the static data for visualization.
+// However, user asked to "link that too the Level Unlocks Distribution".
+// This implies dynamic data based on what we set in GameSettings.
+// I'll simulate fetching the config to build this graph.
 
 export function Graphs() {
+  const [unlocksDistribution, setUnlocksDistribution] = useState<{ level: number, unlocks: number }[]>([]);
+
+  useEffect(() => {
+      // Fetch game config to calculate distribution
+      // Use /api proxy to avoid localhost connection issues
+      fetch('/api/game-config').then(r=>r.json()).then(data => {
+          // Calculate distribution from guns + attachments
+          const dist = new Map<number, number>();
+          const items = [...(data.guns || []), ...(data.attachments || [])];
+          items.forEach((item: any) => {
+              const lvl = item.unlockLevel || 0;
+              dist.set(lvl, (dist.get(lvl) || 0) + 1);
+          });
+          
+          const chartData = Array.from(dist.entries()).map(([level, count]) => ({ level, unlocks: count })).sort((a,b) => a.level - b.level);
+          if (chartData.length > 0) setUnlocksDistribution(chartData);
+      }).catch(() => {
+          // Fallback if no server endpoint
+          setUnlocksDistribution([
+              { level: 0, unlocks: 5 },
+              { level: 1, unlocks: 2 },
+              { level: 5, unlocks: 3 },
+              { level: 10, unlocks: 4 },
+              { level: 20, unlocks: 2 },
+              { level: 50, unlocks: 1 },
+          ]);
+      });
+  }, []);
+
   return (
     <div className="space-y-6">
       <motion.div
@@ -77,7 +95,7 @@ export function Graphs() {
                 Level Unlocks Distribution
             </h3>
             <ResponsiveContainer width="100%" height="85%" minHeight={200}>
-                <BarChart data={unlocksData}>
+                <BarChart data={unlocksDistribution.length > 0 ? unlocksDistribution : unlocksData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                     <XAxis dataKey="level" stroke="#94a3b8" label={{ value: 'Level', position: 'insideBottomRight', offset: -5 }} />
                     <YAxis stroke="#94a3b8" />
@@ -85,7 +103,7 @@ export function Graphs() {
                         contentStyle={{ backgroundColor: '#0f172a', borderColor: '#a855f7', color: '#fff' }}
                         cursor={{ fill: '#1e293b' }}
                     />
-                    <Bar dataKey="unlocks" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="unlocks" fill="#a855f7" radius={[4, 4, 0, 0]} name="Items Unlocked" />
                 </BarChart>
             </ResponsiveContainer>
         </TechCard>
@@ -155,6 +173,26 @@ export function Graphs() {
     </div>
   );
 }
+
+const progressionData = [
+  { day: 'Mon', xp: 4000, level: 12 },
+  { day: 'Tue', xp: 3000, level: 12 },
+  { day: 'Wed', xp: 2000, level: 13 },
+  { day: 'Thu', xp: 2780, level: 13 },
+  { day: 'Fri', xp: 1890, level: 14 },
+  { day: 'Sat', xp: 2390, level: 14 },
+  { day: 'Sun', xp: 3490, level: 15 },
+];
+
+const unlocksData = [
+  { level: 1, unlocks: 2, xpReq: 100 },
+  { level: 5, unlocks: 5, xpReq: 500 },
+  { level: 10, unlocks: 3, xpReq: 1500 },
+  { level: 15, unlocks: 8, xpReq: 3000 },
+  { level: 20, unlocks: 4, xpReq: 6000 },
+  { level: 25, unlocks: 6, xpReq: 10000 },
+  { level: 30, unlocks: 2, xpReq: 15000 },
+];
 const weaponUsage = [
   { weapon: 'AK-47', picks: 120 },
   { weapon: 'M4A1', picks: 160 },

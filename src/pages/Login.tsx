@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, User, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useAuthStore } from '../store/auth';
 
 export function Login() {
     const navigate = useNavigate();
+    const login = useAuthStore(s => s.login);
+    const users = useAuthStore(s => s.users);
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -18,14 +22,24 @@ export function Login() {
 
         // Mock authentication
         setTimeout(() => {
-            if (username === 'admin' && password === 'admin') {
+            const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+            
+            if (user) {
+                if (user.password && user.password !== password) {
+                    setError('Access Denied: Invalid Password');
+                    setIsLoading(false);
+                    return;
+                }
+                
+                // Successful Login
+                login(user);
                 localStorage.setItem('isAuthenticated', 'true');
-                navigate('/');
+                navigate('/workspace');
             } else {
-                setError('Invalid credentials. Try admin/admin');
+                setError('Access Denied: User Not Found');
                 setIsLoading(false);
             }
-        }, 1000);
+        }, 800);
     };
 
     return (

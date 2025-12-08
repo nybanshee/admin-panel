@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
-import { Users, Activity, DollarSign, TrendingUp, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Activity, DollarSign, TrendingUp, Zap, ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { TechCard } from '../components/TechCard';
 
@@ -42,7 +43,13 @@ const stats = [
     icon: DollarSign,
     color: 'text-purple-400',
     borderColor: 'border-purple-500/50',
-    shadow: 'shadow-purple-500/20'
+    shadow: 'shadow-purple-500/20',
+    isExpandable: true,
+    details: [
+        { label: 'Robux', value: 'R$ 12,000,000', subValue: '($42,000)' },
+        { label: 'DevEx Rate', value: '0.0035', subValue: 'USD/R$' },
+        { label: 'IRL Donations', value: '$3,231', subValue: 'via Stripe' },
+    ]
   },
 ];
 
@@ -62,6 +69,16 @@ const item = {
 };
 
 export function Overview() {
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
+
+  const toggleStat = (label: string) => {
+    if (expandedStat === label) {
+        setExpandedStat(null);
+    } else {
+        setExpandedStat(label);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <motion.div
@@ -85,17 +102,23 @@ export function Overview() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+        className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
       >
         {stats.map((stat) => (
           <motion.div
             key={stat.label}
             variants={item}
+            onClick={() => {
+                // @ts-ignore
+                if (stat.isExpandable) toggleStat(stat.label);
+            }}
             className={cn(
-                "relative overflow-hidden rounded-none border-l-4 bg-slate-900/80 p-6 backdrop-blur-sm",
+                "relative overflow-hidden rounded-none border-l-4 bg-slate-900/80 p-6 backdrop-blur-sm transition-all duration-300",
                 stat.borderColor,
                 // Custom clip path for angular look
-                "[clip-path:polygon(0_0,100%_0,100%_calc(100%-15px),calc(100%-15px)_100%,0_100%)]"
+                "[clip-path:polygon(0_0,100%_0,100%_calc(100%-15px),calc(100%-15px)_100%,0_100%)]",
+                // @ts-ignore
+                stat.isExpandable ? "cursor-pointer hover:bg-slate-800/80" : ""
             )}
           >
             {/* Background glow */}
@@ -103,8 +126,12 @@ export function Overview() {
             
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   {stat.label}
+                  {/* @ts-ignore */}
+                  {stat.isExpandable && (
+                    <ChevronDown className={cn("w-3 h-3 transition-transform", expandedStat === stat.label && "rotate-180")} />
+                  )}
                 </p>
                 <div className="mt-2 flex items-baseline">
                   <span className="text-3xl font-black text-white tracking-tight">
@@ -124,14 +151,40 @@ export function Overview() {
                 <stat.icon className="h-6 w-6" />
               </div>
             </div>
+
+            {/* Expanded Content */}
+            <AnimatePresence>
+                {/* @ts-ignore */}
+                {expandedStat === stat.label && stat.details && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="pt-4 mt-4 border-t border-slate-800 space-y-3">
+                             {/* @ts-ignore */}
+                            {stat.details.map((detail, idx) => (
+                                <div key={idx} className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-400">{detail.label}</span>
+                                    <div className="text-right">
+                                        <div className="text-white font-bold">{detail.value}</div>
+                                        <div className="text-[10px] text-slate-500">{detail.subValue}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
           </motion.div>
         ))}
       </motion.div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
         <TechCard
             delay={0.4}
-            className="col-span-4"
+            className="lg:col-span-4"
         >
             <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-white uppercase tracking-wider">Activity Overview</h3>
@@ -148,7 +201,7 @@ export function Overview() {
 
         <TechCard
             delay={0.5}
-            className="col-span-3"
+            className="lg:col-span-3"
         >
             <h3 className="mb-6 text-lg font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2">Recent Actions</h3>
             <div className="space-y-6">

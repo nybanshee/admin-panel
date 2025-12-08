@@ -17,13 +17,13 @@ interface TechTabControlProps {
 
 export function TechTabControl({ tabs, activeTab, onChange, className }: TechTabControlProps) {
     return (
-        <div className={cn("flex p-1 bg-slate-900/80 border border-slate-800 backdrop-blur-sm", className)}>
+        <div className={cn("flex flex-wrap p-1 bg-slate-900/80 border border-slate-800 backdrop-blur-sm", className)}>
             {tabs.map((tab) => (
                 <button
                     key={tab.id}
                     onClick={() => onChange(tab.id)}
                     className={cn(
-                        "relative flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors duration-300 z-10 outline-none",
+                        "relative flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors duration-300 z-10 outline-none min-w-[120px]",
                         activeTab === tab.id ? "text-cyan-400" : "text-slate-500 hover:text-slate-300"
                     )}
                 >
