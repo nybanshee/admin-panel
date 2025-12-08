@@ -24,6 +24,7 @@ export interface User {
     roleId: string; // ID of the Role
     password?: string; 
     isDedicated?: boolean; // Dedicated users cannot be deleted or have roles changed by others
+    role?: string; // Legacy field for compatibility
     theme?: {
         primaryColor: string;
         accentColor: string;

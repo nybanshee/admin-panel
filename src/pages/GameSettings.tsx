@@ -31,6 +31,7 @@ const defaultWeaponConfig: Omit<WeaponConfig, 'id' | 'name' | 'category' | 'enab
     magSize: 30,
     reloadTime: 2.5,
   },
+  unlockLevel: 0,
   visuals: {
     skin: 'Default',
     rarity: 'Common',
@@ -64,11 +65,11 @@ const initialBullets: BulletConfig[] = [
 ];
 
 const initialAttachments: AttachmentConfig[] = [
-    { id: 'red_dot', name: 'Red Dot Sight', type: 'optic', weight: 0.2, pros: ['Precision', 'Acquisition'], cons: [] },
-    { id: 'acog', name: 'ACOG 4x', type: 'optic', weight: 0.4, pros: ['Zoom', 'Range'], cons: ['ADS Speed'] },
-    { id: 'suppressor', name: 'Tac Suppressor', type: 'muzzle', weight: 0.3, pros: ['Sound', 'Flash'], cons: ['Range', 'ADS Speed'] },
-    { id: 'vert_grip', name: 'Vertical Grip', type: 'grip', weight: 0.2, pros: ['Recoil Control'], cons: ['Move Speed'] },
-    { id: 'ext_mag', name: 'Extended Mag', type: 'mag', weight: 0.5, pros: ['Ammo Capacity'], cons: ['Reload Speed', 'ADS Speed'] },
+    { id: 'red_dot', name: 'Red Dot Sight', type: 'optic', weight: 0.2, unlockLevel: 0, pros: ['Precision', 'Acquisition'], cons: [] },
+    { id: 'acog', name: 'ACOG 4x', type: 'optic', weight: 0.4, unlockLevel: 5, pros: ['Zoom', 'Range'], cons: ['ADS Speed'] },
+    { id: 'suppressor', name: 'Tac Suppressor', type: 'muzzle', weight: 0.3, unlockLevel: 10, pros: ['Sound', 'Flash'], cons: ['Range', 'ADS Speed'] },
+    { id: 'vert_grip', name: 'Vertical Grip', type: 'grip', weight: 0.2, unlockLevel: 3, pros: ['Recoil Control'], cons: ['Move Speed'] },
+    { id: 'ext_mag', name: 'Extended Mag', type: 'mag', weight: 0.5, unlockLevel: 7, pros: ['Ammo Capacity'], cons: ['Reload Speed', 'ADS Speed'] },
 ];
 
 const gunCategories = [
@@ -165,28 +166,6 @@ export function GameSettings() {
     try { return raw ? JSON.parse(raw) : []; } catch { return []; }
   });
 
-  // Search Logic
-  const searchResults = searchQuery.length > 0 ? [
-    ...Object.values(guns).filter(g => 
-        g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        g.id.includes(searchQuery.toLowerCase())
-    ).map(g => ({ type: 'gun', item: g })),
-    ...bullets.filter(b => 
-        b.label.toLowerCase().includes(searchQuery.toLowerCase())
-    ).map(b => ({ type: 'bullet', item: b })),
-    ...attachments.filter(a => 
-        a.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ).map(a => ({ type: 'attachment', item: a })),
-    ...maps.filter(m => 
-        m.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ).map(m => ({ type: 'map', item: m }))
-  ] : [];
-
-  const saveRecoilPatterns = (next: RecoilPattern[]) => {
-    setRecoilPatterns(next);
-    localStorage.setItem('recoilPatterns', JSON.stringify(next));
-  };
-  
   const [guns, setGuns] = useState<Record<string, WeaponConfig>>({
     ak47: { 
         ...defaultWeaponConfig, 
@@ -245,6 +224,23 @@ export function GameSettings() {
         }
     }
   });
+
+  // Search Logic
+  const searchResults = searchQuery.length > 0 ? [
+    ...Object.values(guns).filter(g => 
+        g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        g.id.includes(searchQuery.toLowerCase())
+    ).map(g => ({ type: 'gun', item: g })),
+    ...bullets.filter(b => 
+        b.label.toLowerCase().includes(searchQuery.toLowerCase())
+    ).map(b => ({ type: 'bullet', item: b })),
+    ...attachments.filter(a => 
+        a.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ).map(a => ({ type: 'attachment', item: a })),
+    ...maps.filter(m => 
+        m.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ).map(m => ({ type: 'map', item: m }))
+  ] : [];
 
   // Helpers
   const updateGun = (gunKey: string, path: string[], value: unknown) => {

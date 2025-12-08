@@ -233,7 +233,13 @@ const BoardNode = memo(({
             dragMomentum={false}
             dragElastic={0}
             // Remove initial/exit animations for better performance
-            style={{ x: node.x, y: node.y }}
+            style={{
+                x: node.x,
+                y: node.y,
+                width: node.width || (node.type === 'container' ? 400 : 256),
+                height: node.height || (node.type === 'container' ? 400 : 'auto'),
+                minHeight: node.type === 'container' || node.type === 'model3d' || node.type === 'whiteboard' ? 300 : undefined
+            }}
             onDrag={(_, info) => onDrag(node.id, info.offset)}
             onDragEnd={(_, info) => onDragEnd(node.id, info.offset)}
             onClick={(e) => { e.stopPropagation(); onSelect(node.id); }}
@@ -247,11 +253,6 @@ const BoardNode = memo(({
                 node.type === 'container' ? "z-0" : "z-10",
                 isSelected ? "ring-2 ring-white z-50 scale-105" : "hover:z-20"
             )}
-            style={{
-                width: node.width || (node.type === 'container' ? 400 : 256),
-                height: node.height || (node.type === 'container' ? 400 : 'auto'),
-                minHeight: node.type === 'container' || node.type === 'model3d' || node.type === 'whiteboard' ? 300 : undefined
-            }}
         >
             {/* Container Resize Handle */}
             {(node.type === 'container' || node.type === 'model3d' || node.type === 'whiteboard') && !isVisitor && (
