@@ -6,12 +6,9 @@ import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    hmr: {
-      clientPort: 443,
-    },
-    allowedHosts: [
-      'tiny-pigs-relax.loca.lt'
-    ]
+    // Standard local dev setup
+    port: 5173,
+    host: true, 
   },
   build: {
     sourcemap: 'hidden',
