@@ -132,7 +132,7 @@ function MultiSelectionControls({ selectedIds, snapToGrid }: { selectedIds: stri
                     // Commit to history
                     endMoveNodes(selectedIds);
                 }}
-                onObjectChange={(e) => {
+                onObjectChange={(e: any) => {
                     const newPos = e.target.object.position;
                     if (lastPosRef.current) {
                         const delta = [
