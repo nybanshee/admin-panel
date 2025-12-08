@@ -16,13 +16,135 @@ const boards = new Map()
 const onlineUsers = new Map() // socketId -> { username, role, location, timestamp }
 const adminLogs = []
 
-// --- Game Config Store ---
+// --- Game Config Store (Default Values) ---
+const defaultWeaponConfig = {
+    stats: {
+        weight: 3.5,
+        gravity: 1,
+        gripStrength: 1,
+        damage: 30,
+        fireRate: 600,
+        burstAmount: 1,
+        accuracy: 95,
+        spread: 0.02,
+        recoilPattern: 'Vertical',
+        magSize: 30,
+        reloadTime: 2.5,
+    },
+    unlockLevel: 0,
+    visuals: {
+        skin: 'Default',
+        rarity: 'Common',
+        fireSound: 'Gunshot_Default',
+        tracerColor: 'Green',
+    },
+    offsets: {
+        view: { x: 0, y: 0, z: 0 },
+        aim: { x: 0, y: 0, z: 0 },
+        muzzle: { x: 0, y: 0, z: -1 },
+    },
+    springs: {
+        recoil: { stiffness: 100, damping: 0.5 },
+        sway: { stiffness: 8, damping: 0.6 },
+        adsZoom: { stiffness: 50, damping: 0.9 },
+        ads: { stiffness: 50, damping: 0.8 },
+        movement: { stiffness: 20, damping: 0.6 },
+        reload: { stiffness: 40, damping: 0.7 },
+        fire: { stiffness: 80, damping: 0.5 },
+    },
+};
+
 let gameConfig = {
-    guns: {},
-    bullets: [],
-    attachments: [],
-    maps: [],
-    gamemodes: [],
+    guns: {
+        ak47: {
+            ...defaultWeaponConfig,
+            id: 'ak47', name: 'AK-47', category: 'ar',
+            enabled: true, dualWield: false, magSequence: ['std', 'std', 'trc'],
+            stats: { ...defaultWeaponConfig.stats, damage: 35, fireRate: 600, recoilPattern: 'Vertical' },
+            attachmentSlots: {
+                optic: { allowed: ['red_dot', 'acog'] },
+                muzzle: { allowed: ['suppressor'] },
+                grip: { allowed: ['vert_grip'] },
+                mag: { allowed: ['ext_mag'] },
+                barrel: { allowed: [] },
+                stock: { allowed: [] },
+            }
+        },
+        m4a1: {
+            ...defaultWeaponConfig,
+            id: 'm4a1', name: 'M4A1 Carbine', category: 'ar',
+            enabled: true, dualWield: false, magSequence: ['std'],
+            stats: { ...defaultWeaponConfig.stats, damage: 28, fireRate: 800, weight: 3.2 },
+            attachmentSlots: {
+                optic: { allowed: ['red_dot', 'acog'] },
+                muzzle: { allowed: ['suppressor'] },
+                grip: { allowed: ['vert_grip'] },
+                mag: { allowed: ['ext_mag'] },
+                barrel: { allowed: [] },
+                stock: { allowed: [] },
+            }
+        },
+        deagle: {
+            ...defaultWeaponConfig,
+            id: 'deagle', name: 'Desert Eagle', category: 'pistol',
+            enabled: true, dualWield: true, magSequence: ['hp'],
+            stats: { ...defaultWeaponConfig.stats, damage: 50, fireRate: 300, magSize: 7, weight: 1.8 },
+            attachmentSlots: {
+                optic: { allowed: ['red_dot'] },
+                muzzle: { allowed: ['suppressor'] },
+                grip: { allowed: [] },
+                mag: { allowed: [] },
+                barrel: { allowed: [] },
+                stock: { allowed: [] },
+            }
+        },
+        mp5: {
+            ...defaultWeaponConfig,
+            id: 'mp5', name: 'MP5 Submachine Gun', category: 'smg',
+            enabled: true, dualWield: false, magSequence: ['std'],
+            stats: { ...defaultWeaponConfig.stats, fireRate: 900, damage: 22 },
+            attachmentSlots: {
+                optic: { allowed: ['red_dot', 'acog'] },
+                muzzle: { allowed: ['suppressor'] },
+                grip: { allowed: ['vert_grip'] },
+                mag: { allowed: ['ext_mag'] },
+                barrel: { allowed: [] },
+                stock: { allowed: [] },
+            }
+        }
+    },
+    bullets: [
+        { id: 'std', label: 'Standard FMJ', color: 'bg-slate-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 5, recoilMult: 1.0, isExplosive: false },
+        { id: 'ap', label: 'Armor Piercing', color: 'bg-cyan-500', damageMult: 0.9, penetration: 80, velocity: 1.2, gravity: 0.9, spread: 3, recoilMult: 1.2, isExplosive: false },
+        { id: 'hp', label: 'Hollow Point', color: 'bg-red-500', damageMult: 1.3, penetration: 5, velocity: 0.9, gravity: 1.0, spread: 8, recoilMult: 1.0, isExplosive: false },
+        { id: 'inc', label: 'Incendiary', color: 'bg-orange-500', damageMult: 1.1, penetration: 10, velocity: 1.0, gravity: 1.0, spread: 6, recoilMult: 1.0, isExplosive: false },
+        { id: 'exp', label: 'Explosive', color: 'bg-yellow-400', damageMult: 0.8, penetration: 10, velocity: 0.8, gravity: 1.5, spread: 12, recoilMult: 1.5, isExplosive: true },
+        { id: 'trc', label: 'Tracer', color: 'bg-green-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 4, recoilMult: 1.0, isExplosive: false },
+    ],
+    attachments: [
+        { id: 'red_dot', name: 'Red Dot Sight', type: 'optic', weight: 0.2, unlockLevel: 0, pros: ['Precision', 'Acquisition'], cons: [] },
+        { id: 'acog', name: 'ACOG 4x', type: 'optic', weight: 0.4, unlockLevel: 5, pros: ['Zoom', 'Range'], cons: ['ADS Speed'] },
+        { id: 'suppressor', name: 'Tac Suppressor', type: 'muzzle', weight: 0.3, unlockLevel: 10, pros: ['Sound', 'Flash'], cons: ['Range', 'ADS Speed'] },
+        { id: 'vert_grip', name: 'Vertical Grip', type: 'grip', weight: 0.2, unlockLevel: 3, pros: ['Recoil Control'], cons: ['Move Speed'] },
+        { id: 'ext_mag', name: 'Extended Mag', type: 'mag', weight: 0.5, unlockLevel: 7, pros: ['Ammo Capacity'], cons: ['Reload Speed', 'ADS Speed'] },
+    ],
+    maps: [
+        { id: 'arena', name: 'Cyber Arena', tags: ['small', 'symmetrical'], enabled: true },
+        { id: 'docks', name: 'Neon Docks', tags: ['mid', 'lanes'], enabled: true },
+        { id: 'spire', name: 'Crystal Spire', tags: ['large', 'vertical'], enabled: true }
+    ],
+    gamemodes: [
+        {
+            id: 'tdm', name: 'Team Deathmatch', enabled: true, mapBanningEnabled: false, bansPerTeam: 1, candidateCount: 3, rotation: [
+                { mapId: 'arena', weight: 50 }, { mapId: 'docks', weight: 30 }, { mapId: 'spire', weight: 20 }
+            ]
+        },
+        {
+            id: 'ctf', name: 'Capture The Flag', enabled: true, mapBanningEnabled: true, bansPerTeam: 2, candidateCount: 5, rotation: [
+                { mapId: 'docks', weight: 60 }, { mapId: 'spire', weight: 40 }
+            ]
+        }
+    ],
     recoilPatterns: []
 };
 // -------------------------

@@ -5,8 +5,8 @@ local Players = game:GetService("Players")
 --------------------------------------------------------------------------------
 -- [CONFIGURATION]
 -------------------------------------------------------------------------------- CONFIGURATION
--- 1. URL: Use your Render Backend URL (e.g., https://admin-panel-api.onrender.com/api/roblox)
-local API_URL = "https://YOUR-RENDER-BACKEND-URL.onrender.com/api/roblox" 
+-- 1. URL: Use your Render Backend URL
+local API_URL = "https://admin-panel-2o96.onrender.com/api/roblox" 
 
 -- 2. API Key: Must match ROBLOX_API_KEY in server.js / render.yaml
 local API_KEY = "change_me_in_prod" 
