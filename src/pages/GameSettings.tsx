@@ -166,6 +166,11 @@ export function GameSettings() {
     try { return raw ? JSON.parse(raw) : []; } catch { return []; }
   });
 
+  const saveRecoilPatterns = (next: RecoilPattern[]) => {
+    setRecoilPatterns(next);
+    localStorage.setItem('recoilPatterns', JSON.stringify(next));
+  };
+  
   const [guns, setGuns] = useState<Record<string, WeaponConfig>>({
     ak47: { 
         ...defaultWeaponConfig, 
@@ -790,7 +795,8 @@ export function GameSettings() {
                                         <div className="text-[10px] text-slate-500 font-mono">{p.points.length} pts</div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button className="px-3 py-2 text-xs bg-slate-800 border border-slate-700 text-red-400" onClick={()=>{                                            const next = recoilPatterns.filter(r=>r.id!==p.id);
+                                        <button className="px-3 py-2 text-xs bg-slate-800 border border-slate-700 text-red-400" onClick={()=>{
+                                            const next = recoilPatterns.filter(r=>r.id!==p.id);
                                             saveRecoilPatterns(next);
                                         }}>Delete</button>
                                     </div>
