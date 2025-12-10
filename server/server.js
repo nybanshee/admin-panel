@@ -60,7 +60,7 @@ let gameConfig = {
             ...defaultWeaponConfig,
             id: 'ak47', name: 'AK-47', category: 'ar',
             enabled: true, dualWield: false, magSequence: ['std', 'std', 'trc'],
-            stats: { ...defaultWeaponConfig.stats, damage: 35, fireRate: 600, recoilPattern: 'Vertical' },
+            stats: { ...defaultWeaponConfig.stats, damage: 35, fireRate: 600 },
             attachmentSlots: {
                 optic: { allowed: ['red_dot', 'acog'] },
                 muzzle: { allowed: ['suppressor'] },

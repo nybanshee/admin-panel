@@ -37,19 +37,14 @@ const defaultWeaponConfig: Omit<WeaponConfig, 'id' | 'name' | 'category' | 'enab
     fireSound: 'Gunshot_Default',
     tracerColor: 'Green',
   },
-  offsets: {
-    view: { x: 0, y: 0, z: 0 },
-    aim: { x: 0, y: 0, z: 0 },
-    muzzle: { x: 0, y: 0, z: -1 },
-  },
   springs: {
-    recoil: { stiffness: 100, damping: 0.5 },
-    sway: { stiffness: 8, damping: 0.6 },
-    adsZoom: { stiffness: 50, damping: 0.9 },
-    ads: { stiffness: 50, damping: 0.8 },
-    movement: { stiffness: 20, damping: 0.6 },
-    reload: { stiffness: 40, damping: 0.7 },
-    fire: { stiffness: 80, damping: 0.5 },
+    recoil: { mass: 1, damping: 0.5, constant: 100, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 1 },
+    sway: { mass: 1, damping: 0.6, constant: 8, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 0.5 },
+    adsZoom: { mass: 1, damping: 0.9, constant: 50, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 0.8 },
+    ads: { mass: 1, damping: 0.8, constant: 50, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 0.8 },
+    movement: { mass: 1, damping: 0.6, constant: 20, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 0.6 },
+    reload: { mass: 1, damping: 0.7, constant: 40, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 0.7 },
+    fire: { mass: 1, damping: 0.5, constant: 80, initialOffset: 0, initialVelocity: 0, externalForce: 0, goal: 0, frequency: 1.2 },
   },
 };
 
@@ -289,11 +284,9 @@ export function GameSettings() {
             <div className="flex items-center space-x-6">
                  {/* Quick Dual Wield Toggle */}
                  <div className="flex items-center gap-2">
-                    <span className={cn("text-[10px] font-bold uppercase", gun.dualWield ? "text-purple-400" : "text-slate-600")}>
-                        Dual Wield
-                    </span>
+                    <span className={cn("text-[10px] font-bold uppercase", gun.dualWield ? "text-purple-400" : "text-slate-600")}>Dual Wield</span>
                     {isVisitor ? (
-                        <div className={cn("w-8 h-4 rounded-full relative transition-colors", gun.dualWield ? "bg-purple-900/50" : "bg-slate-800")}>
+                        <div className={cn("w-8 h-4 rounded-full relative transition-colors", gun.dualWield ? "bg-purple-900/50" : "bg-slate-800")}> 
                              <div className={cn("absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-slate-600 transition-transform", gun.dualWield && "translate-x-4")} />
                         </div>
                     ) : (
@@ -303,7 +296,19 @@ export function GameSettings() {
                             color="purple"
                         />
                     )}
-                 </div>
+                    <span className={cn("text-[10px] font-bold uppercase ml-4", gun.akimbo ? "text-purple-400" : "text-slate-600")}>Akimbo</span>
+                    {isVisitor ? (
+                        <div className={cn("w-8 h-4 rounded-full relative transition-colors", gun.akimbo ? "bg-purple-900/50" : "bg-slate-800")}> 
+                             <div className={cn("absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-slate-600 transition-transform", gun.akimbo && "translate-x-4")} />
+                        </div>
+                    ) : (
+                        <NeonSwitch 
+                            isOn={!!gun.akimbo} 
+                            onToggle={() => updateGun(gun.id, ['akimbo'], !gun.akimbo)}
+                            color="purple"
+                        />
+                    )}
+                </div>
 
                 <div className="h-6 w-px bg-slate-700 mx-2" />
 
@@ -375,7 +380,7 @@ export function GameSettings() {
 
                         {/* 1. Core Stats Section */}
                         <ConfigSection title="Core Stats" icon={<Crosshair className="h-4 w-4 text-red-400" />} color="red">
-                            <div className={cn("grid grid-cols-2 gap-4", isVisitor && "pointer-events-none opacity-80")}>
+                            <div className={cn("grid grid-cols-2 gap-4", isVisitor && "pointer-events-none opacity-80")}> 
                                 <TechSlider 
                                     label="Damage" value={gun.stats.damage} min={0} max={200} unit="HP" color="red"
                                     onChange={(val) => updateGun(gun.id, ['stats', 'damage'], val)}
@@ -388,48 +393,51 @@ export function GameSettings() {
                                     label="Mag Size" value={gun.stats.magSize} min={1} max={100} step={1} color="red"
                                     onChange={(val) => updateGun(gun.id, ['stats', 'magSize'], val)}
                                 />
-                                <TechSelect 
-                                    label="Recoil Pattern"
-                                    value={gun.statsRecoilPatternId ?? ''}
-                                    options={[{ value: '', label: 'None' }, ...recoilPatterns.map(p=>({ value: p.id, label: p.name }))]}
-                                    color="red"
-                                    onChange={(val) => updateGun(gun.id, ['statsRecoilPatternId'], val)}
-                                />
+                                <TechSlider label="Reserve Ammo" value={gun.stats.reserveAmmo ?? 0} min={0} max={999} step={1} color="red" onChange={(v)=>updateGun(gun.id,['stats','reserveAmmo'],v)} />
+                                <TechSlider label="Throw Damage" value={gun.stats.throwDamage ?? 0} min={0} max={200} step={1} color="red" onChange={(v)=>updateGun(gun.id,['stats','throwDamage'],v)} />
+                                <TechSlider label="Stock Melee Damage" value={gun.stats.stockMeleeDamage ?? 0} min={0} max={200} step={1} color="red" onChange={(v)=>updateGun(gun.id,['stats','stockMeleeDamage'],v)} />
+                                <TechSlider label="Jam Chance" value={gun.stats.jamChance ?? 0} min={0} max={1} step={0.01} color="red" onChange={(v)=>updateGun(gun.id,['stats','jamChance'],v)} />
+                                <TechSlider label="Misfire Chance" value={gun.stats.misfireChance ?? 0} min={0} max={1} step={0.01} color="red" onChange={(v)=>updateGun(gun.id,['stats','misfireChance'],v)} />
+                                <TechSlider label="Ejection Fail Chance" value={gun.stats.ejectionFailChance ?? 0} min={0} max={1} step={0.01} color="red" onChange={(v)=>updateGun(gun.id,['stats','ejectionFailChance'],v)} />
+                                <TechSlider label="Fumble Chance" value={gun.stats.fumbleChance ?? 0} min={0} max={1} step={0.01} color="red" onChange={(v)=>updateGun(gun.id,['stats','fumbleChance'],v)} />
+                                <TechSlider label="Chin Recoil Chance" value={gun.stats.chinRecoilChance ?? 0} min={0} max={1} step={0.01} color="red" onChange={(v)=>updateGun(gun.id,['stats','chinRecoilChance'],v)} />
                             </div>
                         </ConfigSection>
 
                         {/* 2. Offsets (Vectors) */}
                         <ConfigSection title="Offsets & Position" icon={<Move3d className="h-4 w-4 text-cyan-400" />} color="cyan">
-                            <div className={cn("space-y-4", isVisitor && "pointer-events-none opacity-80")}>
-                                <TechVector3 
-                                    label="View Model" value={gun.offsets.view} 
-                                    onChange={(val) => updateGun(gun.id, ['offsets', 'view'], val)}
-                                />
-                                <TechVector3 
-                                    label="Aim Down Sights" value={gun.offsets.aim} 
-                                    onChange={(val) => updateGun(gun.id, ['offsets', 'aim'], val)}
-                                />
+                            <div className={cn("space-y-4", isVisitor && "pointer-events-none opacity-80")}> 
+                                {!gun.offsets ? (
+                                    <button className="px-3 py-2 bg-slate-800 border border-slate-700 text-slate-300" onClick={()=>updateGun(gun.id,['offsets'],{ view:{x:0,y:0,z:0}, aim:{x:0,y:0,z:0}, muzzle:{x:0,y:0,z:-1} })}>Add Offsets</button>
+                                ) : (
+                                    <>
+                                        <TechVector3 label="View Model" value={gun.offsets.view} onChange={(val) => updateGun(gun.id, ['offsets', 'view'], val)} />
+                                        <TechVector3 label="Aim Down Sights" value={gun.offsets.aim} onChange={(val) => updateGun(gun.id, ['offsets', 'aim'], val)} />
+                                    </>
+                                )}
                             </div>
                         </ConfigSection>
 
                         {/* 3. Dynamics (Springs) */}
                         <ConfigSection title="Spring Dynamics" icon={<Activity className="h-4 w-4 text-green-400" />} color="green">
                             <div className={cn("grid grid-cols-2 gap-4", isVisitor && "pointer-events-none opacity-80")}>
-                                <div className="p-3 border border-slate-800 bg-slate-900/50">
-                                    <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase">Recoil Spring</h4>
-                                    <TechSlider 
-                                        label="Stiffness" value={gun.springs.recoil.stiffness} min={0} max={200} color="green"
-                                        onChange={(val) => updateGun(gun.id, ['springs', 'recoil', 'stiffness'], val)}
-                                    />
-                                    <TechSlider 
-                                        label="Damping" value={gun.springs.recoil.damping} min={0} max={5} step={0.1} color="green"
-                                        onChange={(val) => updateGun(gun.id, ['springs', 'recoil', 'damping'], val)}
-                                    />
-                                </div>
+                        <div className="p-3 border border-slate-800 bg-slate-900/50">
+                            <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase">Recoil Spring</h4>
+                            <TechSlider label="Mass" value={gun.springs.recoil.mass} min={0} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','mass'],v)} />
+                            <TechSlider label="Damping" value={gun.springs.recoil.damping} min={0} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','damping'],v)} />
+                            <TechSlider label="Constant" value={gun.springs.recoil.constant} min={0} max={300} step={1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','constant'],v)} />
+                            <TechSlider label="Initial Offset" value={gun.springs.recoil.initialOffset} min={-5} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','initialOffset'],v)} />
+                            <TechSlider label="Initial Velocity" value={gun.springs.recoil.initialVelocity} min={-5} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','initialVelocity'],v)} />
+                            <TechSlider label="External Force" value={gun.springs.recoil.externalForce} min={-5} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','externalForce'],v)} />
+                            <TechSlider label="Goal" value={gun.springs.recoil.goal} min={-5} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','goal'],v)} />
+                            <TechSlider label="Frequency" value={gun.springs.recoil.frequency} min={0} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','recoil','frequency'],v)} />
+                            <button className="mt-2 px-3 py-2 bg-slate-800 border border-slate-700 text-slate-300" onClick={()=>window.open('https://www.desmos.com/calculator/1lzjxyfjum','_blank')}>View Spring</button>
+                        </div>
                                 <div className="p-3 border border-slate-800 bg-slate-900/50">
                                     <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase">ADS Spring</h4>
-                                    <TechSlider label="Stiffness" value={gun.springs.ads.stiffness} min={0} max={200} color="green" onChange={(val)=>updateGun(gun.id,['springs','ads','stiffness'],val)} />
-                                    <TechSlider label="Damping" value={gun.springs.ads.damping} min={0} max={5} step={0.1} color="green" onChange={(val)=>updateGun(gun.id,['springs','ads','damping'],val)} />
+                                    <TechSlider label="Mass" value={gun.springs.ads.mass} min={0} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','ads','mass'],v)} />
+                                    <TechSlider label="Damping" value={gun.springs.ads.damping} min={0} max={5} step={0.1} color="green" onChange={(v)=>updateGun(gun.id,['springs','ads','damping'],v)} />
+                                    <TechSlider label="Constant" value={gun.springs.ads.constant} min={0} max={300} step={1} color="green" onChange={(v)=>updateGun(gun.id,['springs','ads','constant'],v)} />
                                 </div>
                                 <div className="p-3 border border-slate-800 bg-slate-900/50">
                                     <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase">Movement Spring</h4>
@@ -448,7 +456,7 @@ export function GameSettings() {
 
                         <ConfigSection title="Attachment Slots" icon={<Component className="h-4 w-4 text-purple-400" />} color="purple">
                             <div className={cn("grid grid-cols-2 gap-4", isVisitor && "pointer-events-none opacity-80")}>
-                                {['optic','muzzle','grip','mag','barrel','stock'].map(slot => (
+                                {['optic','muzzle','grip','mag','barrel','stock','other'].map(slot => (
                                     <div key={slot} className="p-3 border border-slate-800 bg-slate-900/50">
                                         <div className="text-xs font-bold text-slate-500 mb-2 uppercase">{slot}</div>
                                         <div className="mb-2 text-[10px] text-slate-500">Allowed</div>

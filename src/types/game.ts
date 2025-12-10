@@ -10,6 +10,14 @@ export interface WeaponStats {
   recoilPattern: string;
   magSize: number;
   reloadTime: number;
+  reserveAmmo?: number;
+  throwDamage?: number;
+  stockMeleeDamage?: number;
+  jamChance?: number;
+  misfireChance?: number;
+  ejectionFailChance?: number;
+  fumbleChance?: number;
+  chinRecoilChance?: number;
 }
 
 export interface WeaponVisuals {
@@ -25,14 +33,25 @@ export interface WeaponOffsets {
   muzzle: { x: number; y: number; z: number };
 }
 
+export interface SpringParams {
+  mass: number;
+  damping: number;
+  constant: number;
+  initialOffset: number;
+  initialVelocity: number;
+  externalForce: number;
+  goal: number;
+  frequency: number;
+}
+
 export interface WeaponSprings {
-  recoil: { stiffness: number; damping: number };
-  sway: { stiffness: number; damping: number };
-  adsZoom: { stiffness: number; damping: number };
-  ads: { stiffness: number; damping: number };
-  movement: { stiffness: number; damping: number };
-  reload: { stiffness: number; damping: number };
-  fire: { stiffness: number; damping: number };
+  recoil: SpringParams;
+  sway: SpringParams;
+  adsZoom: SpringParams;
+  ads: SpringParams;
+  movement: SpringParams;
+  reload: SpringParams;
+  fire: SpringParams;
 }
 
 export interface WeaponConfig {
@@ -42,12 +61,13 @@ export interface WeaponConfig {
   unlockLevel: number; // Added unlockLevel
   enabled: boolean;
   dualWield: boolean;
+  akimbo?: boolean;
   magSequence: string[];
   stats: WeaponStats;
   visuals: WeaponVisuals;
   offsets: WeaponOffsets;
   springs: WeaponSprings;
-  attachmentSlots?: Record<'optic' | 'muzzle' | 'grip' | 'mag' | 'barrel' | 'stock', { allowed: string[]; equipped?: string }>;
+  attachmentSlots?: Record<'optic' | 'muzzle' | 'grip' | 'mag' | 'barrel' | 'stock' | 'other', { allowed: string[]; equipped?: string }>;
   statsRecoilPatternId?: string;
 }
 
@@ -73,7 +93,7 @@ export interface BulletConfig {
 export interface AttachmentConfig {
     id: string;
     name: string;
-    type: 'optic' | 'muzzle' | 'grip' | 'mag' | 'barrel' | 'stock'; // Added barrel and stock to type
+    type: 'optic' | 'muzzle' | 'grip' | 'mag' | 'barrel' | 'stock' | 'other';
     unlockLevel: number; // Added unlockLevel
     weight: number;
     pros: string[];
