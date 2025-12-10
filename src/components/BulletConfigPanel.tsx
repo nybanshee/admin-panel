@@ -41,7 +41,12 @@ export function BulletConfigPanel({ bullets, onUpdate }: BulletConfigPanelProps)
             gravity: 1.0,
             spread: 0,
             recoilMult: 1.0,
-            isExplosive: false
+            isExplosive: false,
+            grain: 55,
+            recoilSpring: { stiffness: 100, damping: 0.5 },
+            recoilForce: { x: 0.0, y: 0.5, z: -1.0 },
+            recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0.0 },
+            recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 }
         };
         onUpdate([...bullets, newBullet]);
         setSelectedId(newId);
@@ -161,6 +166,45 @@ export function BulletConfigPanel({ bullets, onUpdate }: BulletConfigPanelProps)
                                     color="green" 
                                     onChange={(v) => updateBullet('recoilMult', v)} 
                                 />
+                            </div>
+
+                            {/* Bullet-centric Recoil */}
+                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded space-y-4">
+                                <div className="text-xs font-bold text-slate-400 uppercase">Recoil • Bullet Properties</div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <TechSlider 
+                                        label="Bullet Grain" 
+                                        value={selectedBullet.grain ?? 55} min={10} max={300} step={1} color="yellow"
+                                        onChange={(v) => updateBullet('grain', v)}
+                                    />
+                                    <TechSlider 
+                                        label="Spring Stiffness" 
+                                        value={selectedBullet.recoilSpring?.stiffness ?? 100} min={0} max={300} step={1} color="green"
+                                        onChange={(v) => updateBullet('recoilSpring', { ...(selectedBullet.recoilSpring ?? { damping: 0.5 }), stiffness: v })}
+                                    />
+                                    <TechSlider 
+                                        label="Spring Damping" 
+                                        value={selectedBullet.recoilSpring?.damping ?? 0.5} min={0} max={5} step={0.1} color="green"
+                                        onChange={(v) => updateBullet('recoilSpring', { ...(selectedBullet.recoilSpring ?? { stiffness: 100 }), damping: v })}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <TechSlider label="Force X" value={selectedBullet.recoilForce?.x ?? 0} min={-2} max={2} step={0.05} color="cyan" onChange={(v)=>updateBullet('recoilForce', { ...(selectedBullet.recoilForce ?? { y:0, z:0 }), x: v })} />
+                                    <TechSlider label="Force Y" value={selectedBullet.recoilForce?.y ?? 0.5} min={-2} max={2} step={0.05} color="cyan" onChange={(v)=>updateBullet('recoilForce', { ...(selectedBullet.recoilForce ?? { x:0, z:0 }), y: v })} />
+                                    <TechSlider label="Force Z" value={selectedBullet.recoilForce?.z ?? -1.0} min={-2} max={2} step={0.05} color="cyan" onChange={(v)=>updateBullet('recoilForce', { ...(selectedBullet.recoilForce ?? { x:0, y:0 }), z: v })} />
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <TechSlider label="Pitch" value={selectedBullet.recoilRotation?.pitch ?? -1.0} min={-10} max={10} step={0.1} color="purple" onChange={(v)=>updateBullet('recoilRotation', { ...(selectedBullet.recoilRotation ?? { yaw:0, roll:0 }), pitch: v })} />
+                                    <TechSlider label="Yaw" value={selectedBullet.recoilRotation?.yaw ?? 0.2} min={-10} max={10} step={0.1} color="purple" onChange={(v)=>updateBullet('recoilRotation', { ...(selectedBullet.recoilRotation ?? { pitch:0, roll:0 }), yaw: v })} />
+                                    <TechSlider label="Roll" value={selectedBullet.recoilRotation?.roll ?? 0.0} min={-10} max={10} step={0.1} color="purple" onChange={(v)=>updateBullet('recoilRotation', { ...(selectedBullet.recoilRotation ?? { pitch:0, yaw:0 }), roll: v })} />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <TechSlider label="Force Jitter" value={selectedBullet.recoilRandomness?.forceJitter ?? 0.1} min={0} max={1} step={0.01} color="orange" onChange={(v)=>updateBullet('recoilRandomness', { ...(selectedBullet.recoilRandomness ?? { rotationJitter: 0.1 }), forceJitter: v })} />
+                                    <TechSlider label="Rotation Jitter" value={selectedBullet.recoilRandomness?.rotationJitter ?? 0.1} min={0} max={1} step={0.01} color="orange" onChange={(v)=>updateBullet('recoilRandomness', { ...(selectedBullet.recoilRandomness ?? { forceJitter: 0.1 }), rotationJitter: v })} />
+                                </div>
                             </div>
 
                             <div className="p-4 bg-slate-900/50 border border-slate-800 rounded space-y-4">

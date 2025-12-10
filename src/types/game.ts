@@ -62,6 +62,12 @@ export interface BulletConfig {
     spread: number;
     recoilMult: number;
     isExplosive: boolean;
+    // Recoil is now bullet-centric
+    grain?: number; // bullet grain
+    recoilSpring?: { stiffness: number; damping: number };
+    recoilForce?: { x: number; y: number; z: number }; // per-axis impulse
+    recoilRotation?: { pitch: number; yaw: number; roll: number }; // rotational kick
+    recoilRandomness?: { forceJitter: number; rotationJitter: number }; // shot-to-shot variation
 }
 
 export interface AttachmentConfig {

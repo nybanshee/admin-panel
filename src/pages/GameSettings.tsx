@@ -9,7 +9,6 @@ import { TechTabControl } from '../components/TechTabControl';
 import { MagazineSequenceEditor } from '../components/MagazineSequenceEditor';
 import { BulletConfigPanel } from '../components/BulletConfigPanel';
 import { AttachmentConfigPanel } from '../components/AttachmentConfigPanel';
-import { RecoilPatternEditor } from '../components/RecoilPatternEditor';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Crosshair, Move3d, Activity, Target, Component, Layers, PenTool, Map, Swords, Lock, Save } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -56,12 +55,12 @@ const defaultWeaponConfig: Omit<WeaponConfig, 'id' | 'name' | 'category' | 'enab
 
 // --- Mock Data ---
 const initialBullets: BulletConfig[] = [
-    { id: 'std', label: 'Standard FMJ', color: 'bg-slate-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 5, recoilMult: 1.0, isExplosive: false },
-    { id: 'ap', label: 'Armor Piercing', color: 'bg-cyan-500', damageMult: 0.9, penetration: 80, velocity: 1.2, gravity: 0.9, spread: 3, recoilMult: 1.2, isExplosive: false },
-    { id: 'hp', label: 'Hollow Point', color: 'bg-red-500', damageMult: 1.3, penetration: 5, velocity: 0.9, gravity: 1.0, spread: 8, recoilMult: 1.0, isExplosive: false },
-    { id: 'inc', label: 'Incendiary', color: 'bg-orange-500', damageMult: 1.1, penetration: 10, velocity: 1.0, gravity: 1.0, spread: 6, recoilMult: 1.0, isExplosive: false },
-    { id: 'exp', label: 'Explosive', color: 'bg-yellow-400', damageMult: 0.8, penetration: 10, velocity: 0.8, gravity: 1.5, spread: 12, recoilMult: 1.5, isExplosive: true },
-    { id: 'trc', label: 'Tracer', color: 'bg-green-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 4, recoilMult: 1.0, isExplosive: false },
+    { id: 'std', label: 'Standard FMJ', color: 'bg-slate-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 5, recoilMult: 1.0, isExplosive: false, grain: 55, recoilSpring: { stiffness: 100, damping: 0.5 }, recoilForce: { x: 0, y: 0.5, z: -1.0 }, recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0 }, recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 } },
+    { id: 'ap', label: 'Armor Piercing', color: 'bg-cyan-500', damageMult: 0.9, penetration: 80, velocity: 1.2, gravity: 0.9, spread: 3, recoilMult: 1.2, isExplosive: false, grain: 62, recoilSpring: { stiffness: 120, damping: 0.6 }, recoilForce: { x: 0, y: 0.6, z: -1.2 }, recoilRotation: { pitch: -1.2, yaw: 0.1, roll: 0 }, recoilRandomness: { forceJitter: 0.12, rotationJitter: 0.1 } },
+    { id: 'hp', label: 'Hollow Point', color: 'bg-red-500', damageMult: 1.3, penetration: 5, velocity: 0.9, gravity: 1.0, spread: 8, recoilMult: 1.0, isExplosive: false, grain: 50, recoilSpring: { stiffness: 90, damping: 0.5 }, recoilForce: { x: 0, y: 0.45, z: -0.9 }, recoilRotation: { pitch: -0.9, yaw: 0.25, roll: 0 }, recoilRandomness: { forceJitter: 0.15, rotationJitter: 0.12 } },
+    { id: 'inc', label: 'Incendiary', color: 'bg-orange-500', damageMult: 1.1, penetration: 10, velocity: 1.0, gravity: 1.0, spread: 6, recoilMult: 1.0, isExplosive: false, grain: 58, recoilSpring: { stiffness: 105, damping: 0.55 }, recoilForce: { x: 0, y: 0.5, z: -1.0 }, recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0 }, recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 } },
+    { id: 'exp', label: 'Explosive', color: 'bg-yellow-400', damageMult: 0.8, penetration: 10, velocity: 0.8, gravity: 1.5, spread: 12, recoilMult: 1.5, isExplosive: true, grain: 80, recoilSpring: { stiffness: 140, damping: 0.7 }, recoilForce: { x: 0, y: 0.8, z: -1.4 }, recoilRotation: { pitch: -1.6, yaw: 0.3, roll: 0.1 }, recoilRandomness: { forceJitter: 0.2, rotationJitter: 0.15 } },
+    { id: 'trc', label: 'Tracer', color: 'bg-green-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 4, recoilMult: 1.0, isExplosive: false, grain: 55, recoilSpring: { stiffness: 100, damping: 0.5 }, recoilForce: { x: 0, y: 0.5, z: -1.0 }, recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0 }, recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 } },
 ];
 
 const initialAttachments: AttachmentConfig[] = [
@@ -164,7 +163,7 @@ export function GameSettings() {
   const [recoilPatterns, setRecoilPatterns] = useState<RecoilPattern[]>(() => {
     const raw = localStorage.getItem('recoilPatterns');
     try { return raw ? JSON.parse(raw) : []; } catch { return []; }
-  });
+  }); // kept for storage, UI disabled
 
   const saveRecoilPatterns = (next: RecoilPattern[]) => {
     setRecoilPatterns(next);
@@ -552,7 +551,7 @@ export function GameSettings() {
             { id: 'attachments', label: 'Attachments', icon: <Component className="w-4 h-4" /> },
             { id: 'gamemodes', label: 'Gamemodes', icon: <Swords className="w-4 h-4" /> },
             { id: 'maps', label: 'Maps', icon: <Map className="w-4 h-4" /> },
-            { id: 'recoil', label: 'Recoil Lab', icon: <PenTool className="w-4 h-4" /> },
+    // Recoil Lab disabled for now
         ]}
       />
       )}
@@ -768,45 +767,7 @@ export function GameSettings() {
           </TechCard>
         )}
 
-        {activeTab === 'recoil' && (
-            <div className={cn("grid grid-cols-3 gap-4 min-h-[600px]", isVisitor && "pointer-events-none opacity-80")}>
-                <div className="col-span-2 h-[600px]">
-                    <RecoilPatternEditor 
-                        onSave={(pattern) => {
-                            const id = `rp_${Date.now()}`;
-                            const createdAt = Date.now();
-                            const name = `Pattern ${new Date().toLocaleTimeString()}`;
-                            const next: RecoilPattern = { id, name, points: pattern, createdAt };
-                            saveRecoilPatterns([ ...recoilPatterns, next ]);
-                        }} 
-                    />
-                </div>
-                <div className="col-span-1">
-                    <TechCard>
-                        <div className="space-y-3">
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Saved Patterns</h3>
-                            {recoilPatterns.length === 0 && (
-                                <div className="text-xs text-slate-500">No patterns saved.</div>
-                            )}
-                            {recoilPatterns.map(p=> (
-                                <div key={p.id} className="flex items-center justify-between border border-slate-800 bg-slate-900/40 p-3">
-                                    <div>
-                                        <div className="text-white text-sm font-bold">{p.name}</div>
-                                        <div className="text-[10px] text-slate-500 font-mono">{p.points.length} pts</div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button className="px-3 py-2 text-xs bg-slate-800 border border-slate-700 text-red-400" onClick={()=>{
-                                            const next = recoilPatterns.filter(r=>r.id!==p.id);
-                                            saveRecoilPatterns(next);
-                                        }}>Delete</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </TechCard>
-                </div>
-            </div>
-        )}
+        {/* Recoil Lab disabled for now */}
       </div>
       )}
     </div>

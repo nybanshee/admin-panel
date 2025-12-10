@@ -114,12 +114,12 @@ let gameConfig = {
         }
     },
     bullets: [
-        { id: 'std', label: 'Standard FMJ', color: 'bg-slate-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 5, recoilMult: 1.0, isExplosive: false },
-        { id: 'ap', label: 'Armor Piercing', color: 'bg-cyan-500', damageMult: 0.9, penetration: 80, velocity: 1.2, gravity: 0.9, spread: 3, recoilMult: 1.2, isExplosive: false },
-        { id: 'hp', label: 'Hollow Point', color: 'bg-red-500', damageMult: 1.3, penetration: 5, velocity: 0.9, gravity: 1.0, spread: 8, recoilMult: 1.0, isExplosive: false },
-        { id: 'inc', label: 'Incendiary', color: 'bg-orange-500', damageMult: 1.1, penetration: 10, velocity: 1.0, gravity: 1.0, spread: 6, recoilMult: 1.0, isExplosive: false },
-        { id: 'exp', label: 'Explosive', color: 'bg-yellow-400', damageMult: 0.8, penetration: 10, velocity: 0.8, gravity: 1.5, spread: 12, recoilMult: 1.5, isExplosive: true },
-        { id: 'trc', label: 'Tracer', color: 'bg-green-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 4, recoilMult: 1.0, isExplosive: false },
+        { id: 'std', label: 'Standard FMJ', color: 'bg-slate-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 5, recoilMult: 1.0, isExplosive: false, grain: 55, recoilSpring: { stiffness: 100, damping: 0.5 }, recoilForce: { x: 0, y: 0.5, z: -1.0 }, recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0 }, recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 } },
+        { id: 'ap', label: 'Armor Piercing', color: 'bg-cyan-500', damageMult: 0.9, penetration: 80, velocity: 1.2, gravity: 0.9, spread: 3, recoilMult: 1.2, isExplosive: false, grain: 62, recoilSpring: { stiffness: 120, damping: 0.6 }, recoilForce: { x: 0, y: 0.6, z: -1.2 }, recoilRotation: { pitch: -1.2, yaw: 0.1, roll: 0 }, recoilRandomness: { forceJitter: 0.12, rotationJitter: 0.1 } },
+        { id: 'hp', label: 'Hollow Point', color: 'bg-red-500', damageMult: 1.3, penetration: 5, velocity: 0.9, gravity: 1.0, spread: 8, recoilMult: 1.0, isExplosive: false, grain: 50, recoilSpring: { stiffness: 90, damping: 0.5 }, recoilForce: { x: 0, y: 0.45, z: -0.9 }, recoilRotation: { pitch: -0.9, yaw: 0.25, roll: 0 }, recoilRandomness: { forceJitter: 0.15, rotationJitter: 0.12 } },
+        { id: 'inc', label: 'Incendiary', color: 'bg-orange-500', damageMult: 1.1, penetration: 10, velocity: 1.0, gravity: 1.0, spread: 6, recoilMult: 1.0, isExplosive: false, grain: 58, recoilSpring: { stiffness: 105, damping: 0.55 }, recoilForce: { x: 0, y: 0.5, z: -1.0 }, recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0 }, recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 } },
+        { id: 'exp', label: 'Explosive', color: 'bg-yellow-400', damageMult: 0.8, penetration: 10, velocity: 0.8, gravity: 1.5, spread: 12, recoilMult: 1.5, isExplosive: true, grain: 80, recoilSpring: { stiffness: 140, damping: 0.7 }, recoilForce: { x: 0, y: 0.8, z: -1.4 }, recoilRotation: { pitch: -1.6, yaw: 0.3, roll: 0.1 }, recoilRandomness: { forceJitter: 0.2, rotationJitter: 0.15 } },
+        { id: 'trc', label: 'Tracer', color: 'bg-green-400', damageMult: 1.0, penetration: 20, velocity: 1.0, gravity: 1.0, spread: 4, recoilMult: 1.0, isExplosive: false, grain: 55, recoilSpring: { stiffness: 100, damping: 0.5 }, recoilForce: { x: 0, y: 0.5, z: -1.0 }, recoilRotation: { pitch: -1.0, yaw: 0.2, roll: 0 }, recoilRandomness: { forceJitter: 0.1, rotationJitter: 0.1 } },
     ],
     attachments: [
         { id: 'red_dot', name: 'Red Dot Sight', type: 'optic', weight: 0.2, unlockLevel: 0, pros: ['Precision', 'Acquisition'], cons: [] },
